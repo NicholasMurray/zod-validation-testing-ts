@@ -10,16 +10,17 @@ const validDateSchema = z
     message: "Please enter a valid date",
   });
 
-// ✅ Main form schema
+// ✅ Main form schema - key change here
 const schema = z
   .object({
     radio: z.enum(["yes", "no"], { required_error: "Please select Yes or No" }),
-    date: validDateSchema.optional(),
+    date: z.string().optional(), // Changed: just optional string, no validation yet
   })
   .superRefine((data, ctx) => {
     if (data.radio !== "yes") return;
-
-    if (typeof data.date !== "string" || data.date.trim() === "") {
+    
+    // Only validate date if "yes" is selected
+    if (!data.date || data.date.trim() === "") {
       ctx.addIssue({
         path: ["date"],
         code: z.ZodIssueCode.custom,
@@ -27,7 +28,8 @@ const schema = z
       });
       return;
     }
-
+    
+    // Validate the date format only if it's provided
     const result = validDateSchema.safeParse(data.date);
     if (!result.success) {
       ctx.addIssue({
