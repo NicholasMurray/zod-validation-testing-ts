@@ -15,7 +15,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export const CheckboxesForm = () => {
-  const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
+  const { control, handleSubmit, formState: { errors }, clearErrors } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       checkboxes: ['option1'], // Your preselected values from context
@@ -46,6 +46,7 @@ export const CheckboxesForm = () => {
                     const values = field.value || [];
                     if (e.target.checked) {
                       field.onChange([...values, option]);
+                      clearErrors('checkboxes'); // Clear errors when checking a box
                     } else {
                       field.onChange(values.filter((val) => val !== option));
                     }
