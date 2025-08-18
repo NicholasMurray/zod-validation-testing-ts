@@ -1,11 +1,13 @@
-import ConditionalForm from './forms/ConditionalForm'
+// import ConditionalForm from './forms/ConditionalForm'
+import { CheckboxesForm } from './forms/CheckboxesForm'
 import './App.css'
 
 function App() {
 
   return (
     <>
-      <ConditionalForm />
+      {/* <ConditionalForm /> */}
+      <CheckboxesForm />
     </>
   )
 }
