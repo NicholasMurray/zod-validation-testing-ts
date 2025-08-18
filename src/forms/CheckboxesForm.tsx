@@ -3,10 +3,14 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 const schema = z.object({
-  checkboxes: z
-    .array(z.string())
-    .min(1, "At least one option must be selected"),
-});
+  checkboxes: z.array(z.string()).optional(),
+}).refine(
+  (data) => data.checkboxes && data.checkboxes.length > 0,
+  {
+    message: "At least one option must be selected",
+    path: ["checkboxes"],
+  }
+);
 
 type FormData = z.infer<typeof schema>;
 
@@ -14,7 +18,7 @@ export const CheckboxesForm = () => {
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      checkboxes: [],
+      checkboxes: ['option1'], // Your preselected values from context
     },
   });
 
