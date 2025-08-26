@@ -5,55 +5,83 @@ import { zodResolver } from '@hookform/resolvers/zod';
 
 // Zod schema with detailed validation (mimics signOffDatesSchemaDetailed)
 const signOffDatesSchema = z.object({
-  technicalSignOffDate: z.string().min(1, "Technical sign-off date is required"),
-  regulatorySignOffDate: z.string().min(1, "Regulatory sign-off date is required"),
-  executiveSignOffDate: z.string().min(1, "Executive sign-off date is required")
+  technicalSignOffDate: z.string(),
+  regulatorySignOffDate: z.string(),
+  executiveSignOffDate: z.string()
 }).superRefine((data, ctx) => {
-  const technicalDate = new Date(data.technicalSignOffDate);
-  const regulatoryDate = new Date(data.regulatorySignOffDate);
-  const executiveDate = new Date(data.executiveSignOffDate);
-  
-  // Check if dates are valid
-  if (isNaN(technicalDate.getTime())) {
+  // Check required fields first with custom messages
+  if (!data.technicalSignOffDate || data.technicalSignOffDate.trim() === '') {
     ctx.addIssue({
-      code: z.ZodIssueCode.invalid_date,
+      code: z.ZodIssueCode.custom,
       path: ["technicalSignOffDate"],
-      message: "Invalid technical sign-off date"
+      message: "Technical sign-off date is required"
     });
   }
   
-  if (isNaN(regulatoryDate.getTime())) {
+  if (!data.regulatorySignOffDate || data.regulatorySignOffDate.trim() === '') {
     ctx.addIssue({
-      code: z.ZodIssueCode.invalid_date,
+      code: z.ZodIssueCode.custom,
       path: ["regulatorySignOffDate"],
-      message: "Invalid regulatory sign-off date"
+      message: "Regulatory sign-off date is required"
     });
   }
   
-  if (isNaN(executiveDate.getTime())) {
+  if (!data.executiveSignOffDate || data.executiveSignOffDate.trim() === '') {
     ctx.addIssue({
-      code: z.ZodIssueCode.invalid_date,
+      code: z.ZodIssueCode.custom,
       path: ["executiveSignOffDate"],
-      message: "Invalid executive sign-off date"
+      message: "Executive sign-off date is required"
     });
   }
   
-  // Only check sequence if all dates are valid
-  if (!isNaN(technicalDate.getTime()) && !isNaN(regulatoryDate.getTime()) && !isNaN(executiveDate.getTime())) {
-    if (regulatoryDate < technicalDate) {
+  // Only proceed with date validation if all fields have values
+  if (data.technicalSignOffDate && data.regulatorySignOffDate && data.executiveSignOffDate) {
+    const technicalDate = new Date(data.technicalSignOffDate);
+    const regulatoryDate = new Date(data.regulatorySignOffDate);
+    const executiveDate = new Date(data.executiveSignOffDate);
+    
+    // Check if dates are valid
+    if (isNaN(technicalDate.getTime())) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["regulatorySignOffDate"],
-        message: "Regulatory sign-off date cannot be before technical sign-off date"
+        code: z.ZodIssueCode.invalid_date,
+        path: ["technicalSignOffDate"],
+        message: "Invalid technical sign-off date"
       });
     }
     
-    if (executiveDate < regulatoryDate) {
+    if (isNaN(regulatoryDate.getTime())) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["executiveSignOffDate"],
-        message: "Executive sign-off date cannot be before regulatory sign-off date"
+        code: z.ZodIssueCode.invalid_date,
+        path: ["regulatorySignOffDate"],
+        message: "Invalid regulatory sign-off date"
       });
+    }
+    
+    if (isNaN(executiveDate.getTime())) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.invalid_date,
+        path: ["executiveSignOffDate"],
+        message: "Invalid executive sign-off date"
+      });
+    }
+    
+    // Only check sequence if all dates are valid
+    if (!isNaN(technicalDate.getTime()) && !isNaN(regulatoryDate.getTime()) && !isNaN(executiveDate.getTime())) {
+      if (regulatoryDate < technicalDate) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["regulatorySignOffDate"],
+          message: "Regulatory sign-off date cannot be before technical sign-off date"
+        });
+      }
+      
+      if (executiveDate < regulatoryDate) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["executiveSignOffDate"],
+          message: "Executive sign-off date cannot be before regulatory sign-off date"
+        });
+      }
     }
   }
 });
